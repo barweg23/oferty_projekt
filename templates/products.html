@@ -1,0 +1,19 @@
+<!doctype html>
+<title>Hello from Flask</title>
+<table>
+  <tr>
+    <th>Product</th>
+    <th>Price</th>
+    <th>Color</th>
+    <th>Moc</th>
+  </tr>
+  {% for product in products %}
+  <tr>
+    <th>{{product.name}}</th>
+    <th>{{product.price}}</th>
+    <th>{{product.color}}</th>
+    <th>{{product.moc}}</th>
+  </tr>
+  {% endfor %}
+
+</table>
