@@ -18,6 +18,7 @@ pdfmetrics.registerFont(TTFont("DejaVuSans", "static/pdf/DejaVuSans.ttf"))
 
 @dataclass
 class Product:
+    id: int
     name: str
     price: int
     color: str
@@ -44,10 +45,10 @@ class InventoryManager:
         self.inventory = inventory
 
     def read_product_data(self):
-        with open("data/dane.csv", "r", encoding="utf-8") as plik:
+        with open("data/dane.csv", "r", encoding="utf-8-sig") as plik:
             czytnik = csv.reader(plik, delimiter=";")
             for i in czytnik:
-                p = Product(i[0].replace('\ufeff', ''), int(i[1]), None, None)
+                p = Product(int(i[0]), i[1], int(i[2]), None, None)
                 self.inventory.products.append(p)
 
 
@@ -82,6 +83,6 @@ if __name__ == "__main__":
     inventory = Inventory([])
     inventory_manager = InventoryManager(inventory)
     inventory_manager.read_product_data()
-
-    pdf = PDFGenerator('test2')
-    pdf.generate_pdf_for_product(inventory_manager.inventory)
+    print(inventory_manager.inventory)
+    #pdf = PDFGenerator('test2')
+    #pdf.generate_pdf_for_product(inventory_manager.inventory)
