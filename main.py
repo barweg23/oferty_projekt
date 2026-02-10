@@ -1,5 +1,5 @@
-#wczytanie csv ;
-#jeden wiersz jedna isntacja dataclass z dwoma artybumtami, kolor, moc
+# wczytanie csv ;
+# jeden wiersz jedna isntacja dataclass z dwoma artybumtami, kolor, moc
 # lista dataclass
 # czesc, wybor z tej dataclasy moze byc wykorzysytany do generatora pdf
 #
@@ -13,16 +13,24 @@ from reportlab.lib import colors
 from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.pdfbase import pdfmetrics
+from typing import Self
 
 pdfmetrics.registerFont(TTFont("DejaVuSans", "static/pdf/DejaVuSans.ttf"))
+
 
 @dataclass
 class Product:
     id: int
     name: str
     price: int
-    color: str
-    moc: float
+    color: str | None
+    moc: float | None
+
+    def __eq__(self, other):
+        if self.id == other:
+            return True
+        return False
+
 
 @dataclass
 class Inventory:
@@ -38,6 +46,31 @@ class Inventory:
     def data(self):
         return self.convert_to_pdf_data()
 
+    @property
+    def products_dict_from_id_to_name(self):
+        empty_dict = {}
+        for product in self.products:
+            empty_dict[product.id] = product.name
+        return empty_dict
+
+    @property
+    def products_dict_from_id_to_product(self):
+        empty_dict = {}
+        for product in self.products:
+            empty_dict[product.id] = product
+        return empty_dict
+
+    def get_product_from_product_id(self, product_id: int) -> Product:
+        for product in self.products:
+            if product == product_id:
+                return product
+
+    def filter_by_ids(self, ids: List[int]) -> Self:
+        list_with_ids = []
+        for id in ids:
+            product = self.get_product_from_product_id(id)
+            list_with_ids.append(product)
+        return Inventory(list_with_ids)
 
 
 class InventoryManager:
@@ -52,15 +85,9 @@ class InventoryManager:
                 self.inventory.products.append(p)
 
 
-
-
-
-
-
 class PDFGenerator:
     def __init__(self, file_name):
         self.path = f"data/output/{file_name}.pdf"
-
 
     def generate_pdf_for_product(self, inventory: Inventory):
         doc = SimpleDocTemplate(self.path, pagesize=letter)
@@ -73,7 +100,7 @@ class PDFGenerator:
             ("TEXTCOLOR", (0, 0), (-1, 0), colors.black),
             ("GRID", (0, 0), (-1, -1), 1, colors.black),
             ("ALIGN", (1, 1), (-1, -1), "CENTER"),
-            ("FONTNAME", (0,0), (-1,-1), "DejaVuSans")
+            ("FONTNAME", (0, 0), (-1, -1), "DejaVuSans")
         ]))
 
         doc.build([table])
@@ -83,6 +110,14 @@ if __name__ == "__main__":
     inventory = Inventory([])
     inventory_manager = InventoryManager(inventory)
     inventory_manager.read_product_data()
-    print(inventory_manager.inventory)
-    #pdf = PDFGenerator('test2')
-    #pdf.generate_pdf_for_product(inventory_manager.inventory)
+    print(inventory_manager.inventory.products_dict_from_id_to_name[10])
+    pdf = PDFGenerator('test4')
+    ids = [10, 12, 15, 20, 25]
+    cart_inventory = inventory_manager.inventory.filter_by_ids(ids)
+    print(cart_inventory)
+    assert isinstance(cart_inventory, Inventory)
+    assert len(cart_inventory.products) == 5
+
+    pdf.generate_pdf_for_product(cart_inventory)
+
+    # pdf.generate_pdf_for_product_form_json(json_data)

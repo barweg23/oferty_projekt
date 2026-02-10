@@ -1,11 +1,49 @@
 <!doctype html>
+<html>
+<head>
 <title>Hello from Flask</title>
+  </head>
+<body>
+  <div id="flash-container">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% for category, message in messages %}
+<div class="flash {{ category }}">{{ message }}</div>
+      {% endfor %}
+    {% endwith %}
+</div>
+<form method="POST" action="{{ url_for('clear_cart') }}">
+  <button type="submit">Clear cart</button>
+</form>
+
+<form id="form" method="POST" action="{{ url_for('generate_pdf') }}">
+  <label for="file_name" >Nazwa pliku</label>
+  <input type="text" name ="file_name" id="file_name">
+  <button type="submit">Generate_PDF</button>
+</form>
+
+  <form id="form2" method="POST" action="{{ url_for('custom_cart') }}">
+  <label for="additional_position" >Koszty dodatkowe</label>
+  <input type="text" name ="additional_position" id="additional_position">
+    <label for="price" >Cena</label>
+    <input type="text" name ="price" id="price">
+  <button type="submit">Add to list</button>
+</form>
+
+<ul>Lista prduktow w koszyku:</ul>
+<ul id="basket-list">
+    {% for product in products_in_cart %}
+      <li data-product-id="{{product.id}}" id="{{product.id}}"> {{product.name}}  <button onclick="removeFromCart({{product.id}})">X</button></li>
+  {% endfor %}
+</ul>
+<ul>--------------------</ul>
+
 <table>
   <tr>
     <th>Product</th>
     <th>Price</th>
     <th>Color</th>
     <th>Moc</th>
+    <th>dodaj</th>
   </tr>
   {% for product in products %}
   <tr>
@@ -13,7 +51,55 @@
     <th>{{product.price}}</th>
     <th>{{product.color}}</th>
     <th>{{product.moc}}</th>
+    <th>
+      <button onclick="addToCart({{ product.id }},`{{product.name}}`)">Add to Basket</button>
+   </th>
   </tr>
   {% endfor %}
 
 </table>
+
+
+
+<script>
+function addToCart(productId, productName) {
+    console.log(productId, productName)
+    fetch("/add_to_cart", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({product_id: productId})
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log(data);
+        const basket = document.getElementById("basket-list");
+        const li = document.createElement("li");
+        li.dataset.productId = productId
+        li.id = productId
+        li.innerHTML = `${productName} <button onclick="removeFromCart(${productId})">X</button>`;
+        basket.appendChild(li);
+        
+
+    });
+}
+
+function removeFromCart(productId) {
+    document.querySelector(`li[data-product-id="${productId}"]`)?.remove();
+    console.log(productId)
+
+    fetch("/remove_from_cart", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({product_id: productId})
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log(data);
+
+    });
+}
+
+</script>
+</body>
+
+</html>
