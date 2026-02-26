@@ -1,11 +1,36 @@
 from flask import Flask
 from flask import render_template, request, session, jsonify, url_for, redirect,flash
 import random
+from flask_wtf import FlaskForm, CSRFProtect
+from wtforms import StringField, SubmitField, IntegerField
+from wtforms.validators import DataRequired, Length
 
 from main import InventoryManager, Inventory, PDFGenerator, Product
 
+from wtforms import Form, BooleanField, StringField, PasswordField, validators
+
+class RegistrationForm(Form):
+    username = StringField('Username', [validators.Length(min=4, max=25)])
+    email = StringField('Email Address', [validators.Length(min=6, max=35)])
+
+class AdditionalExpanses(Form):
+    koszty_dodatkowe = StringField('koszty_dodatkowe', [validators.Length(min=4, max=50)])
+    cena = IntegerField('cena', [validators.Length(min=1, max=6)])
+
+
 app = Flask(__name__)
 app.secret_key = "tajny_secret_key"
+
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    form = RegistrationForm(request.form)
+    if request.method == 'POST' and form.validate():
+        print(form.username.data, form.email.data,
+                    form.password.data)
+        flash('Thanks for registering')
+        return redirect(url_for('login'))
+    return render_template('register.html', form=form)
+
 @app.route("/")
 def hello_world():
     return "<p>Hello, World!</p>"
@@ -25,11 +50,13 @@ def clean_cart_fully():
 
 @app.route('/products/', methods=["GET"])
 def products():
+    form = AdditionalExpanses(request.form)
+    print(session.keys())
     if "cart" not in session.keys():
        session['cart'] = []
     if "custom_cart" not in session.keys(): # keys values items
        session['custom_cart'] = []
-    print('custom_cart:',session['custom_cart'])
+    #print('custom_cart:',session['custom_cart'])
     inventory = Inventory([])
     inventory_manager = InventoryManager(inventory)
     inventory_manager.read_product_data()
@@ -42,7 +69,7 @@ def products():
     print(cart_list)
     print(cart_list)
     #cart_list.append('test custom query')
-    return render_template('products.html', products=inventory_manager.inventory.products, products_in_cart=cart_list)
+    return render_template('products.html', products=inventory_manager.inventory.products, products_in_cart=cart_list, form=form)
 
 @app.route('/add_to_cart', methods=["GET","POST"])
 def add_to_cart():

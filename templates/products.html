@@ -28,7 +28,14 @@
     <input type="text" name ="price" id="price">
   <button type="submit">Add to list</button>
 </form>
+<form method=post>
+    {{ form.koszty_dodatkowe.label  }}
+    {{ form.koszty_dodatkowe(size=32) }}
+    {{ form.cena.label }}
+    {{ form.cena(size=32) }}
 
+  <p><input type=submit value=Register>
+</form>
 <ul>Lista prduktow w koszyku:</ul>
 <ul id="basket-list">
     {% for product in products_in_cart %}

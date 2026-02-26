@@ -1,0 +1,19 @@
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<form method=post>
+    {{ form.username.label  }}
+    {{ form.username(size=32) }}
+    {{ form.email.label }}
+    {{ form.email(size=32) }}
+
+  <p><input type=submit value=Register>
+</form>
+</body>
+</html>
