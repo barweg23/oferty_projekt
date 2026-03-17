@@ -15,7 +15,7 @@ class RegistrationForm(Form):
 
 class AdditionalExpanses(Form):
     koszty_dodatkowe = StringField('koszty_dodatkowe', [validators.Length(min=4, max=50)])
-    cena = IntegerField('cena', [validators.Length(min=1, max=6)])
+    cena = IntegerField('cena', [validators.NumberRange(min=0, max=60000000)])
 
 
 app = Flask(__name__)
@@ -48,7 +48,7 @@ def clean_cart_fully():
     session['cart'] = []
     return "<p>Hello, Test!!</p>"
 
-@app.route('/products/', methods=["GET"])
+@app.route('/products/', methods=["POST", "GET"])
 def products():
     form = AdditionalExpanses(request.form)
     print(session.keys())
@@ -56,12 +56,23 @@ def products():
        session['cart'] = []
     if "custom_cart" not in session.keys(): # keys values items
        session['custom_cart'] = []
+    if request.method == 'POST' and form.validate():
+        koszty_dodatkowe = form.koszty_dodatkowe.data
+        cena = form.cena.data
+        session[koszty_dodatkowe] = cena
+        product = Product(id=random.randint(99999,999999), name=koszty_dodatkowe, price=cena,color=None, moc=None)
+        session['cart'].append(product)
+
+
+        # czytanie formy
+        # dodanie do sesji
+        return redirect(url_for('products'))
     #print('custom_cart:',session['custom_cart'])
     inventory = Inventory([])
     inventory_manager = InventoryManager(inventory)
     inventory_manager.read_product_data()
     cart_list = []
-    print(session['cart'])
+    print(f"{session['custom_cart']}")
     for product in session['cart']:
         product = inventory_manager.inventory.products_dict_from_id_to_product.get(product['id'], product)
         if product:
@@ -184,11 +195,24 @@ def generate_pdf():
     flash(f"PDF has been generated!, name = {file_name}.pdf", 'success')
     return redirect(url_for("products"))
 
+@app.route("/api/search", methods=["POST", "GET"])
+def search():
+    query = request.args.get('q', '').lower()
+    print(query)
+    inventory = Inventory([])
+    inventory_manager = InventoryManager(inventory)
+    inventory_manager.read_product_data()
+    filtered_list = []
+    for product in inventory.products: #query in name
+        if query in product.name.lower():
+            filtered_list.append(product)
 
+
+    return jsonify(filtered_list)
 # TODO new feature: custom fields
 # mozna przygotowac jakos baze good but not enough
 # nazwa cena _> dodaj + zapmietaj + wygeneruj
 #
 
 if __name__ == '__main__':
-    app.run(debug=True, port=5050)
+    app.run(debug=True, port=5052)
