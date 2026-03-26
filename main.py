@@ -1,8 +1,3 @@
-# wczytanie csv ;
-# jeden wiersz jedna isntacja dataclass z dwoma artybumtami, kolor, moc
-# lista dataclass
-# czesc, wybor z tej dataclasy moze byc wykorzysytany do generatora pdf
-#
 
 from dataclasses import dataclass
 from typing import List

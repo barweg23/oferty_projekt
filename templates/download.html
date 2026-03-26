@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Browse_pdf</title>
+</head>
+<body>
+
+<ul id="pdfs_list" class="list-group">
+    {% for filename in pdfs_list %}
+      <li>
+ <a href="{{ url_for('download_file', filename=filename) }}" target="_blank">
+    {{ filename }}
+</a>      </li>
+  {% endfor %}
+</ul>
+</body>
+</html>
